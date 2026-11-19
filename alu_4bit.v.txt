@@ -1,0 +1,59 @@
+`timescale 1ns/1ps
+
+module alu_4bit (
+    input  wire [3:0] A,
+    input  wire [3:0] B,
+    input  wire [2:0] sel,
+    output reg  [3:0] result,
+    output reg        carry_out,
+    output wire       zero
+);
+
+    reg [4:0] temp_alu;
+
+    always @(*) begin
+        temp_alu  = 5'b00000;
+        result    = 4'b0000;
+        carry_out = 1'b0;
+
+        case (sel)
+            3'b000: begin // Addition
+                temp_alu  = {1'b0, A} + {1'b0, B};
+                result    = temp_alu[3:0];
+                carry_out = temp_alu[4];
+            end
+            3'b001: begin // Subtraction (A - B)
+                temp_alu  = {1'b0, A} - {1'b0, B};
+                result    = temp_alu[3:0];
+                carry_out = temp_alu[4]; // Borrow indicator in unsigned 5-bit math
+            end
+            3'b010: begin // Bitwise AND
+                result = A & B;
+            end
+            3'b011: begin // Bitwise OR
+                result = A | B;
+            end
+            3'b100: begin // Bitwise XOR
+                result = A ^ B;
+            end
+            3'b101: begin // Bitwise NOT of A
+                result = ~A;
+            end
+            3'b110: begin // Logical Shift Left A by 1
+                result    = {A[2:0], 1'b0};
+                carry_out = A[3];
+            end
+            3'b111: begin // Logical Shift Right A by 1
+                result    = {1'b0, A[3:1]};
+                carry_out = A[0];
+            end
+            default: begin
+                result    = 4'b0000;
+                carry_out = 1'b0;
+            end
+        endcase
+    end
+
+    assign zero = (result == 4'b0000);
+
+endmodule
